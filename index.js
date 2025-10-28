@@ -26,7 +26,7 @@ const server = http.createServer(async (req, res) => {
         // Trả về nếu thành công
         res.statusCode = 200;
         res.setHeader('Content-Type', 'text/plain');
-        res.end(`KET NOI DATABASE THANH CONG!\n\nThoi gian DB server: ${time}\n`);
+        res.end(`CICD test DATABASE THANH CONG!\n\nThoi gian DB server: ${time}\n`);
 
     } catch (err) {
         // Trả về nếu thất bại
