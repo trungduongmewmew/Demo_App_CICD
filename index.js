@@ -26,7 +26,7 @@ const server = http.createServer(async (req, res) => {
         
         res.statusCode = 200;
         res.setHeader('Content-Type', 'text/plain');
-        res.end(`CICD Test DATABASE THANH CONG!\n\nThoi gian DB server: ${time}\n`);
+        res.end(`CICD KET NOI DATABASE THANH CONG BY DUONGDT !\n\nThoi gian DB server: ${time}\n`);
 
     } catch (err) {
         

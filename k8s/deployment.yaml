@@ -14,31 +14,30 @@ spec:
     spec:
       containers:
       - name: demo-app-container
-        # Tên image này sẽ được Jenkins cập nhật tự động
+        
         image: duongdt1998/demo-app-cicd:latest 
         ports:
         - containerPort: 8080
         
-        # --- PHẦN QUAN TRỌNG: TIÊM BIẾN MÔI TRƯỜNG ---
+        
         env:
-        # 1. Lấy bí mật từ K8s Secret
+        
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: postgres-creds  # Tên của Secret sẽ tạo ở Giai đoạn 1
-              key: DB_USER          # Tên của 'key' trong Secret
+              name: postgres-creds  
+              key: DB_USER          
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: postgres-creds
               key: DB_PASSWORD
               
-        # 2. Cung cấp thông tin (không bí mật)
-        # !!! THAY CÁC GIÁ TRỊ NÀY CHO ĐÚNG VỚI POSTGRES CỦA BẠN !!!
+        
         - name: DB_HOST
-          value: "192.168.4.67"  # <--- THAY BẰNG IP / DNS CỦA DB
+          value: "192.168.4.67"  
         - name: DB_NAME
-          value: "postgres"       # <--- THAY BẰNG TÊN DATABASE
+          value: "postgres"       
         - name: DB_PORT
           value: "5432"
-        # --- HẾT ---
+        
