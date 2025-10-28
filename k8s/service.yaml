@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: demo-app-service
 spec:
-  type: NodePort # Dùng NodePort cho dễ demo
+  type: NodePort 
   selector:
-    app: demo-app # Phải khớp với 'labels' của Deployment
+    app: demo-app 
   ports:
     - protocol: TCP
       port: 80       
-      targetPort: 8080 # Phải khớp 'containerPort'
-      # nodePort: 30007 (Để trống K8s tự chọn)
+      targetPort: 8080 
+      
