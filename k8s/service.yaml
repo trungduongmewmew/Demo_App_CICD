@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app-service
+spec:
+  type: NodePort # Dùng NodePort cho dễ demo
+  selector:
+    app: demo-app # Phải khớp với 'labels' của Deployment
+  ports:
+    - protocol: TCP
+      port: 80       
+      targetPort: 8080 # Phải khớp 'containerPort'
+      # nodePort: 30007 (Để trống K8s tự chọn)
