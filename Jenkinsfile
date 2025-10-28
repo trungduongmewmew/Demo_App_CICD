@@ -10,6 +10,14 @@ def DOCKERHUB_CREDS_ID = "dockerhub-creds"
 pipeline {
     agent any // Chạy trên agent bất kỳ
 
+    // --- PHẦN SỬA LỖI ---
+    // Định nghĩa biến IMAGE_TAG ở đây
+    // Nó sẽ tự động lấy số build (1, 2, 3...)
+    environment {
+        IMAGE_TAG = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+    }
+    // --- HẾT PHẦN SỬA ---
+
     stages {
         stage('1. Checkout Code') {
             steps {
@@ -20,27 +28,22 @@ pipeline {
 
         stage('2. Build Docker Image') {
             steps {
-                // ${env.BUILD_NUMBER} là biến của Jenkins (1, 2, 3...)
-                // Dùng nó làm tag cho image (ví dụ: my-app:1, my-app:2)
-                def imageTag = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-                
-                echo "Dang build image: ${imageTag}"
+                // Sử dụng biến IMAGE_TAG đã định nghĩa ở trên
+                echo "Dang build image: ${IMAGE_TAG}"
                 script {
                     // Chạy lệnh docker build
-                    docker.build(imageTag, ".")
+                    docker.build(IMAGE_TAG, ".")
                 }
             }
         }
 
         stage('3. Push Image to Docker Hub') {
             steps {
-                def imageTag = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-                
-                echo "Dang day image ${imageTag} len Docker Hub..."
+                echo "Dang day image ${IMAGE_TAG} len Docker Hub..."
                 // Dùng 'chìa khóa' dockerhub-creds
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', DOCKERHUB_CREDS_ID) {
-                        docker.image(imageTag).push()
+                        docker.image(IMAGE_TAG).push()
                     }
                 }
             }
@@ -48,13 +51,10 @@ pipeline {
 
         stage('4. Deploy to Kubernetes') {
             steps {
-                def imageTag = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-                
-                echo "Dang deploy image ${imageTag} len K8s..."
+                echo "Dang deploy image ${IMAGE_TAG} len K8s..."
                 
                 // Dùng 'chìa khóa' kubeconfig-creds
                 withCredentials([file(credentialsId: KUBECONFIG_ID, variable: 'KUBECONFIG')]) {
-                    // Jenkins sẽ tự động dùng file KUBECONFIG này cho mọi lệnh kubectl
                     
                     // 1. Áp dụng Service (để mở cổng)
                     sh 'kubectl apply -f k8s/service.yaml'
@@ -63,11 +63,8 @@ pipeline {
                     sh 'kubectl apply -f k8s/deployment.yaml'
                     
                     // 3. Cập nhật image cho deployment
-                    // Đây là lệnh quan trọng nhất:
-                    // Bảo K8s tìm 'deployment/demo-app-deployment',
-                    // trong đó tìm container 'demo-app-container',
-                    // và SET IMAGE của nó thành image mới nhất
-                    sh "kubectl set image deployment/demo-app-deployment demo-app-container=${imageTag}"
+                    // Sử dụng biến IMAGE_TAG
+                    sh "kubectl set image deployment/demo-app-deployment demo-app-container=${IMAGE_TAG}"
                     
                     // 4. Chờ K8s deploy xong và báo cáo
                     sh 'kubectl rollout status deployment/demo-app-deployment'
@@ -81,9 +78,8 @@ pipeline {
         always {
             echo 'Don dep...'
             // Xóa image vừa build trên máy Jenkins để tiết kiệm dung lượng
-            def imageTag = "${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-            // Bỏ qua lỗi nếu image không tồn tại
-            sh "docker rmi ${imageTag} || true"
+            // Sử dụng biến IMAGE_TAG
+            sh "docker rmi ${IMAGE_TAG} || true"
         }
     }
 }
